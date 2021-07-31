@@ -1,0 +1,11 @@
+topic_id:
+  default: 38
+  type: integer
+  description: "Poll must be in the first post of this topic"
+
+poll_name:
+  default: example
+  description: "When creating a poll you must add a name; [name=example]"
+
+poll_key:
+  default: "0 (not likely) - 10 (very likely)"
