@@ -5,7 +5,15 @@ topic_id:
 
 poll_name:
   default: example
-  description: "When creating a poll you must add a name; [name=example]"
+  description: "When creating a poll you must add a name to the poll's bbcode; [name=example]"
 
 poll_key:
   default: "0 (not likely) - 10 (very likely)"
+
+show_after: 
+  default: 20
+  descrption: "Start showing the banner N minutes after someone's first visit"
+
+stop_after: 
+  default: 10080
+  descriptioin: "Stop showing the banner if someone hasn't voted within N minutes"

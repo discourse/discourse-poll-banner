@@ -12,28 +12,43 @@ export default Component.extend({
   init() {
     this._super(...arguments);
 
-    if (!this.currentUser) {
+    if (!this.currentUser || localStorage.getItem(`poll_${settings.topic_id}_closed`)) {
       return;
     }
 
+    const date = Date.now();
     let topicId = settings.topic_id;
     let getLocal = localStorage.getItem("poll_" + topicId);
+    let showTime = 60000 * settings.show_after; 
+    let stopTime = 60000 * settings.stop_after; 
+    let timeElapsed = 0;
 
     if (topicId && !getLocal) {
       ajax(`/t/${topicId}.json`).then((response) => {
         let firstPost = response.post_stream.posts[0].cooked;
         let cachedTopic = new PostCooked({
           cooked: firstPost,
+          timestamp: date,
+          postId: response.post_stream.posts[0].id,
         });
 
+        localStorage.setItem("poll_" + settings.topic_id, JSON.stringify(cachedTopic));
         this.set("postId", response.post_stream.posts[0].id);
         this.set("cooked", cachedTopic.attrs.cooked);
-        this.set("showPoll", true);
+      }); 
+    } else if (topicId && getLocal) {
+      let storage = JSON.parse(localStorage.getItem("poll_" + settings.topic_id));
+      timeElapsed = date - storage.attrs.timestamp;
+      this.set("cooked", storage.attrs.cooked);
+      this.set("postId", storage.attrs.postId);
+    } 
 
-        document
-          .querySelector(".poll-banner-connector")
-          .classList.add("visible-poll");
-      });
+    if ((timeElapsed >= showTime && timeElapsed <= stopTime)) {
+      this.set("showPoll", true);
+      document.querySelector(".poll-banner-connector").classList.add("visible-poll");
+    } else {
+      this.set("showPoll", false);
+      document.querySelector(".poll-banner-connector").classList.remove("visible-poll");
     }
   },
 
@@ -73,7 +88,7 @@ export default Component.extend({
 
   @action
   closePoll() {
-    localStorage.setItem("poll_" + settings.topic_id, "true");
+    localStorage.setItem(`poll_${settings.topic_id}_closed`, "true");
     document
       .querySelector(".poll-banner-connector")
       .classList.remove("visible-poll");
