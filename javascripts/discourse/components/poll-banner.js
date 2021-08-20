@@ -12,13 +12,13 @@ export default Component.extend({
   init() {
     this._super(...arguments);
 
-    if (!this.currentUser || localStorage.getItem(`poll_${settings.topic_id}_closed`)) {
+    if (!this.currentUser || localStorage.getItem(`polls_${settings.topic_id}_closed`)) {
       return;
     }
 
     const date = Date.now();
     let topicId = settings.topic_id;
-    let getLocal = localStorage.getItem("poll_" + topicId);
+    let getLocal = localStorage.getItem("polls_" + topicId);
     let showTime = 60000 * settings.show_after; 
     let stopTime = 60000 * settings.stop_after; 
     let timeElapsed = 0;
@@ -32,12 +32,12 @@ export default Component.extend({
           postId: response.post_stream.posts[0].id,
         });
 
-        localStorage.setItem("poll_" + settings.topic_id, JSON.stringify(cachedTopic));
+        localStorage.setItem("polls_" + settings.topic_id, JSON.stringify(cachedTopic));
         this.set("postId", response.post_stream.posts[0].id);
         this.set("cooked", cachedTopic.attrs.cooked);
       }); 
     } else if (topicId && getLocal) {
-      let storage = JSON.parse(localStorage.getItem("poll_" + settings.topic_id));
+      let storage = JSON.parse(localStorage.getItem("polls_" + settings.topic_id));
       timeElapsed = date - storage.attrs.timestamp;
       this.set("cooked", storage.attrs.cooked);
       this.set("postId", storage.attrs.postId);
@@ -88,7 +88,7 @@ export default Component.extend({
 
   @action
   closePoll() {
-    localStorage.setItem(`poll_${settings.topic_id}_closed`, "true");
+    localStorage.setItem(`polls_${settings.topic_id}_closed`, "true");
     document
       .querySelector(".poll-banner-connector")
       .classList.remove("visible-poll");
