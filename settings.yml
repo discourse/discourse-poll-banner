@@ -12,8 +12,8 @@ poll_key:
 
 show_after: 
   default: 20
-  descrption: "Start showing the banner N minutes after someone's first visit"
+  description: "Start showing the banner N minutes after someone's first visit"
 
 stop_after: 
   default: 10080
-  descriptioin: "Stop showing the banner if someone hasn't voted within N minutes"
+  description: "Stop showing the banner if someone hasn't voted within N minutes"
