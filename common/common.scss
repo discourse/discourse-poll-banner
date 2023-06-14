@@ -20,7 +20,7 @@
 }
 
 .poll-banner-content {
-  box-shadow: shadow("card");
+  box-shadow: var(--shadow-card);
   padding: 1.5em 1em;
   position: relative;
 
