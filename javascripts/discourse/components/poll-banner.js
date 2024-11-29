@@ -1,16 +1,17 @@
 import Component from "@ember/component";
 import { action } from "@ember/object";
+import { classNameBindings } from "@ember-decorators/component";
 import { ajax } from "discourse/lib/ajax";
 import PostCooked from "discourse/widgets/post-cooked";
 
-export default Component.extend({
-  classNameBindings: ["poll-banner"],
-  cooked: null,
-  showPoll: false,
-  postId: null,
+@classNameBindings("poll-banner")
+export default class PollBanner extends Component {
+  cooked = null;
+  showPoll = false;
+  postId = null;
 
   init() {
-    this._super(...arguments);
+    super.init(...arguments);
 
     if (
       !this.currentUser ||
@@ -62,7 +63,7 @@ export default Component.extend({
         .querySelector(".poll-banner-connector")
         .classList.remove("visible-poll");
     }
-  },
+  }
 
   click(e) {
     let voteClick = e.target.getAttribute("data-poll-option-id");
@@ -96,7 +97,7 @@ export default Component.extend({
         }
       });
     }
-  },
+  }
 
   @action
   closePoll() {
@@ -105,5 +106,5 @@ export default Component.extend({
       .querySelector(".poll-banner-connector")
       .classList.remove("visible-poll");
     this.set("showPoll", false);
-  },
-});
+  }
+}
