@@ -33,11 +33,13 @@
     right: 5px;
     top: 5px;
     flex-direction: row-reverse;
+
     .d-icon {
       margin-right: 0;
       margin-left: 0.3em;
       color: var(--primary-high);
     }
+
     .d-button-label {
       color: var(--primary-low-mid);
       transition: color 0.15s;
@@ -46,6 +48,7 @@
     &:hover,
     &:focus {
       background: var(--primary-low);
+
       .d-button-label {
         color: var(--primary-high);
       }
@@ -79,14 +82,21 @@
       margin-bottom: 0;
       border: none;
     }
+
     &[data-poll-type="number"] li[data-poll-option-id] {
-      @include btn;
       width: unset;
       min-width: 2.5em;
-      margin: 0.5em 0.5em 0;
-      padding: 0.6em 0;
-      border-radius: 100%;
-      font-size: var(--font-0);
+
+      @include btn;
+
+      // btn overrides
+      // stylelint-disable-next-line no-duplicate-selectors
+      & {
+        border-radius: 100%;
+        padding: 0.6em 0;
+        font-size: var(--font-0);
+        margin: 0.5em 0.5em 0;
+      }
 
       &.selected-vote,
       &.selected-vote:hover {
@@ -95,6 +105,7 @@
         border-color: var(--success);
       }
     }
+
     ul {
       padding-top: 0.5em;
     }
