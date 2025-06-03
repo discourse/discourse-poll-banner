@@ -1,6 +1,8 @@
 import Component from "@ember/component";
 import { action } from "@ember/object";
 import { classNameBindings } from "@ember-decorators/component";
+import DButton from "discourse/components/d-button";
+import htmlSafe from "discourse/helpers/html-safe";
 import { ajax } from "discourse/lib/ajax";
 import PostCooked from "discourse/widgets/post-cooked";
 
@@ -107,4 +109,17 @@ export default class PollBanner extends Component {
       .classList.remove("visible-poll");
     this.set("showPoll", false);
   }
+
+  <template>
+    <div class="poll-banner-content">
+      {{htmlSafe this.cooked}}
+      <DButton
+        class="btn-flat"
+        @action={{action "closePoll"}}
+        @icon="times"
+        @label="share.close"
+      />
+      <div class="poll-banner-key">{{settings.poll_key}}</div>
+    </div>
+  </template>
 }
