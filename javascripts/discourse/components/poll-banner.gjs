@@ -4,7 +4,7 @@ import { classNameBindings } from "@ember-decorators/component";
 import DButton from "discourse/components/d-button";
 import htmlSafe from "discourse/helpers/html-safe";
 import { ajax } from "discourse/lib/ajax";
-import PostCooked from "discourse/widgets/post-cooked";
+import { popupAjaxError } from "discourse/lib/ajax-error";
 
 @classNameBindings("poll-banner")
 export default class PollBanner extends Component {
@@ -32,17 +32,19 @@ export default class PollBanner extends Component {
     if (topicId && !getLocal) {
       ajax(`/t/${topicId}.json`).then((response) => {
         let firstPost = response.post_stream.posts[0].cooked;
-        let cachedTopic = new PostCooked({
-          cooked: firstPost,
-          timestamp: date,
-          postId: response.post_stream.posts[0].id,
-        });
+        let cachedTopic = {
+          attrs: {
+            cooked: firstPost,
+            postId: response.post_stream.posts[0].id,
+            timestamp: date,
+          },
+        };
 
         localStorage.setItem(
           "polls_" + settings.topic_id,
           JSON.stringify(cachedTopic)
         );
-        this.set("postId", response.post_stream.posts[0].id);
+        this.set("postId", cachedTopic.attrs.postId);
         this.set("cooked", cachedTopic.attrs.cooked);
       });
     } else if (topicId && getLocal) {
@@ -90,14 +92,16 @@ export default class PollBanner extends Component {
           poll_name: settings.poll_name,
           options: [voteClick],
         },
-      }).then((result) => {
-        if (result.vote[0].length > 0) {
-          let msDelay = 1000;
-          setTimeout(() => {
-            this.send("closePoll");
-          }, msDelay);
-        }
-      });
+      })
+        .then((result) => {
+          if (result.vote[0].length > 0) {
+            let msDelay = 1000;
+            setTimeout(() => {
+              this.send("closePoll");
+            }, msDelay);
+          }
+        })
+        .catch(popupAjaxError);
     }
   }
 
