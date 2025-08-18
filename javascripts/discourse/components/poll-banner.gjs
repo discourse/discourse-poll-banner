@@ -119,7 +119,7 @@ export default class PollBanner extends Component {
       {{htmlSafe this.cooked}}
       <DButton
         class="btn-flat"
-        @action={{action "closePoll"}}
+        @action={{this.closePoll}}
         @icon="times"
         @label="share.close"
       />
