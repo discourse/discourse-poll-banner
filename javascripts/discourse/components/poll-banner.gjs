@@ -13,11 +13,11 @@ import { popupAjaxError } from "discourse/lib/ajax-error";
 export default class PollBanner extends Component {
   @service currentUser;
 
-  pollStore = new KeyValueStore("poll-banner_");
-
   @tracked cooked;
   @tracked postId;
   @tracked isVisible = false;
+
+  pollStore = new KeyValueStore("poll-banner_");
 
   get shouldShowPoll() {
     const topicId = settings.topic_id;
