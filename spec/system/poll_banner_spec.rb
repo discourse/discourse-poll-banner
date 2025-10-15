@@ -17,7 +17,7 @@ RSpec.describe "Poll Banner", type: :system do
   end
 
   def dismiss_modals
-    if page.has_css?(".dialog-overlay")
+    if page.has_css?(".dialog-overlay", wait: 0)
       page.execute_script("document.querySelector('.dialog-overlay')?.click()")
     end
   end
