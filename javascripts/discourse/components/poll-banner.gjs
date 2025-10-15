@@ -137,9 +137,9 @@ export default class PollBanner extends Component {
         {{if this.isVisible 'visible-poll'}}"
       {{didInsert this.setupPoll}}
     >
+      {{! template-lint-disable no-invalid-interactive }}
       <div
         class="poll-banner poll-banner-content"
-        role="group"
         {{on "click" this.handleVote}}
       >
         {{htmlSafe this.cooked}}
