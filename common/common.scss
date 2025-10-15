@@ -73,6 +73,12 @@
       padding: 0;
     }
 
+    ul {
+      display: flex;
+      justify-content: center;
+      list-style-type: none;
+    }
+
     .poll-info {
       display: none;
     }
@@ -86,6 +92,7 @@
     &[data-poll-type="number"] li[data-poll-option-id] {
       width: unset;
       min-width: 2.5em;
+      cursor: pointer;
 
       @include btn;
 

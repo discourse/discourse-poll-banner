@@ -1,129 +1,152 @@
-import Component from "@ember/component";
+import Component from "@glimmer/component";
+import { tracked } from "@glimmer/tracking";
 import { action } from "@ember/object";
+import { inject as service } from "@ember/service";
 import { htmlSafe } from "@ember/template";
-import { classNameBindings } from "@ember-decorators/component";
+import { on } from "@ember/modifier";
+import didInsert from "@ember/render-modifiers/modifiers/did-insert";
 import DButton from "discourse/components/d-button";
+import KeyValueStore from "discourse/lib/key-value-store";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
 
-@classNameBindings("poll-banner")
 export default class PollBanner extends Component {
-  cooked = null;
-  showPoll = false;
-  postId = null;
+  @service currentUser;
 
-  init() {
-    super.init(...arguments);
+  pollStore = new KeyValueStore("poll-banner_");
 
-    if (
-      !this.currentUser ||
-      localStorage.getItem(`polls_${settings.topic_id}_closed`)
-    ) {
-      return;
-    }
+  @tracked cooked;
+  @tracked postId;
+  @tracked isVisible = false;
 
-    const date = Date.now();
-    let topicId = settings.topic_id;
-    let getLocal = localStorage.getItem("polls_" + topicId);
-    let showTime = 60000 * settings.show_after;
-    let stopTime = 60000 * settings.stop_after;
-    let timeElapsed = 0;
+  get shouldShowPoll() {
+    const topicId = settings.topic_id;
+    return (
+      topicId &&
+      topicId !== 0 &&
+      this.currentUser &&
+      !this.pollStore.get(`${topicId}_closed`)
+    );
+  }
 
-    if (topicId && !getLocal) {
-      ajax(`/t/${topicId}.json`).then((response) => {
-        let firstPost = response.post_stream.posts[0].cooked;
-        let cachedTopic = {
-          attrs: {
-            cooked: firstPost,
-            postId: response.post_stream.posts[0].id,
-            timestamp: date,
-          },
-        };
+  getCachedPollData() {
+    return this.pollStore.getObject(String(settings.topic_id));
+  }
 
-        localStorage.setItem(
-          "polls_" + settings.topic_id,
-          JSON.stringify(cachedTopic)
-        );
-        this.set("postId", cachedTopic.attrs.postId);
-        this.set("cooked", cachedTopic.attrs.cooked);
-      });
-    } else if (topicId && getLocal) {
-      let storage = JSON.parse(
-        localStorage.getItem("polls_" + settings.topic_id)
-      );
-      timeElapsed = date - storage.attrs.timestamp;
-      this.set("cooked", storage.attrs.cooked);
-      this.set("postId", storage.attrs.postId);
-    }
+  cachePollData(cooked, postId) {
+    const pollData = {
+      cooked,
+      postId,
+      timestamp: Date.now(),
+    };
+    this.pollStore.setObject({
+      key: String(settings.topic_id),
+      value: pollData,
+    });
+    return pollData;
+  }
 
-    if (timeElapsed >= showTime && timeElapsed <= stopTime) {
-      this.set("showPoll", true);
-      document
-        .querySelector(".poll-banner-connector")
-        .classList.add("visible-poll");
-    } else {
-      this.set("showPoll", false);
-      document
-        .querySelector(".poll-banner-connector")
-        .classList.remove("visible-poll");
+  async loadPollFromTopic() {
+    const topicId = settings.topic_id;
+    try {
+      const response = await ajax(`/t/${topicId}.json`);
+      const firstPost = response.post_stream.posts[0];
+      const pollData = this.cachePollData(firstPost.cooked, firstPost.id);
+      this.cooked = pollData.cooked;
+      this.postId = pollData.postId;
+    } catch (error) {
+      this.isVisible = false;
+      popupAjaxError(error);
     }
   }
 
-  click(e) {
-    let voteClick = e.target.getAttribute("data-poll-option-id");
+  loadPollFromCache(cachedData) {
+    this.cooked = cachedData.cooked;
+    this.postId = cachedData.postId;
+    return Date.now() - cachedData.timestamp;
+  }
 
-    if (voteClick) {
-      let voteOptions = document.querySelectorAll("[data-poll-option-id]");
+  shouldDisplayBanner(timeElapsed) {
+    const showTime = 60000 * settings.show_after;
+    const stopTime = 60000 * settings.stop_after;
+    return timeElapsed >= showTime && timeElapsed <= stopTime;
+  }
 
-      let voteSelected = document.querySelector(
-        '[data-poll-option-id="' + voteClick + '"]'
-      );
-
-      voteOptions.forEach((option) => {
-        option.classList.remove("selected-vote");
-      });
-
-      voteSelected.classList.add("selected-vote");
-
-      ajax("/polls/vote", {
-        type: "PUT",
-        data: {
-          post_id: this.postId,
-          poll_name: settings.poll_name,
-          options: [voteClick],
-        },
-      })
-        .then((result) => {
-          if (result.vote[0].length > 0) {
-            let msDelay = 1000;
-            setTimeout(() => {
-              this.send("closePoll");
-            }, msDelay);
-          }
-        })
-        .catch(popupAjaxError);
+  @action
+  async setupPoll() {
+    if (!this.shouldShowPoll) {
+      return;
     }
+
+    const cachedData = this.getCachedPollData();
+    let timeElapsed = 0;
+
+    if (cachedData) {
+      timeElapsed = this.loadPollFromCache(cachedData);
+    } else {
+      await this.loadPollFromTopic();
+    }
+
+    this.isVisible = this.shouldDisplayBanner(timeElapsed);
+  }
+
+  @action
+  handleVote(event) {
+    const voteOptionId = event.target.getAttribute("data-poll-option-id");
+
+    if (!voteOptionId) {
+      return;
+    }
+
+    const pollContainer = event.currentTarget;
+    pollContainer
+      .querySelectorAll("[data-poll-option-id]")
+      .forEach((option) => option.classList.remove("selected-vote"));
+    event.target.classList.add("selected-vote");
+
+    ajax("/polls/vote", {
+      type: "PUT",
+      data: {
+        post_id: this.postId,
+        poll_name: settings.poll_name,
+        options: [voteOptionId],
+      },
+    })
+      .then((result) => {
+        if (result.vote[0].length > 0) {
+          setTimeout(() => {
+            this.closePoll();
+          }, 1000);
+        }
+      })
+      .catch(popupAjaxError);
   }
 
   @action
   closePoll() {
-    localStorage.setItem(`polls_${settings.topic_id}_closed`, "true");
-    document
-      .querySelector(".poll-banner-connector")
-      .classList.remove("visible-poll");
-    this.set("showPoll", false);
+    this.pollStore.set({
+      key: `${settings.topic_id}_closed`,
+      value: "true",
+    });
+    this.isVisible = false;
   }
 
   <template>
-    <div class="poll-banner-content">
-      {{htmlSafe this.cooked}}
-      <DButton
-        class="btn-flat"
-        @action={{this.closePoll}}
-        @icon="times"
-        @label="share.close"
-      />
-      <div class="poll-banner-key">{{settings.poll_key}}</div>
+    <div
+      class="above-main-container-outlet poll-banner-connector
+        {{if this.isVisible 'visible-poll'}}"
+      {{didInsert this.setupPoll}}
+    >
+      <div class="poll-banner poll-banner-content" {{on "click" this.handleVote}}>
+        {{htmlSafe this.cooked}}
+        <DButton
+          class="btn-flat"
+          @action={{this.closePoll}}
+          @icon="xmark"
+          @label="share.close"
+        />
+        <div class="poll-banner-key">{{settings.poll_key}}</div>
+      </div>
     </div>
   </template>
 }
