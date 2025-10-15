@@ -1,14 +1,14 @@
 import Component from "@glimmer/component";
 import { tracked } from "@glimmer/tracking";
+import { on } from "@ember/modifier";
 import { action } from "@ember/object";
+import didInsert from "@ember/render-modifiers/modifiers/did-insert";
 import { service } from "@ember/service";
 import { htmlSafe } from "@ember/template";
-import { on } from "@ember/modifier";
-import didInsert from "@ember/render-modifiers/modifiers/did-insert";
 import DButton from "discourse/components/d-button";
-import KeyValueStore from "discourse/lib/key-value-store";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
+import KeyValueStore from "discourse/lib/key-value-store";
 
 export default class PollBanner extends Component {
   @service currentUser;
