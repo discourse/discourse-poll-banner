@@ -2,7 +2,7 @@
 
 RSpec.describe "Poll Banner", type: :system do
   let!(:theme) { upload_theme_component }
-  fab!(:user) { Fabricate(:user) }
+  fab!(:user)
   fab!(:topic_with_poll) do
     topic = Fabricate(:topic)
     raw_content = <<~MD

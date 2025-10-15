@@ -137,7 +137,11 @@ export default class PollBanner extends Component {
         {{if this.isVisible 'visible-poll'}}"
       {{didInsert this.setupPoll}}
     >
-      <div class="poll-banner poll-banner-content" {{on "click" this.handleVote}}>
+      <div
+        class="poll-banner poll-banner-content"
+        role="group"
+        {{on "click" this.handleVote}}
+      >
         {{htmlSafe this.cooked}}
         <DButton
           class="btn-flat"
