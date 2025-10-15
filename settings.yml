@@ -1,5 +1,5 @@
 topic_id:
-  default: 38
+  default: 0
   type: integer
   description: "Poll must be in the first post of this topic"
 

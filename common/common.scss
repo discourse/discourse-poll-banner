@@ -73,6 +73,13 @@
       padding: 0;
     }
 
+    ul {
+      display: flex;
+      justify-content: center;
+      list-style-type: none;
+      padding-top: 0.5em;
+    }
+
     .poll-info {
       display: none;
     }
@@ -86,6 +93,7 @@
     &[data-poll-type="number"] li[data-poll-option-id] {
       width: unset;
       min-width: 2.5em;
+      cursor: pointer;
 
       @include btn;
 
@@ -104,10 +112,6 @@
         color: var(--secondary);
         border-color: var(--success);
       }
-    }
-
-    ul {
-      padding-top: 0.5em;
     }
   }
 
