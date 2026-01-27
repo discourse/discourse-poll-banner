@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe "Poll Banner", type: :system do
+RSpec.describe "Poll Banner" do
   let!(:theme) { upload_theme_component }
   fab!(:user)
   fab!(:topic_with_poll) do
@@ -39,8 +39,8 @@ RSpec.describe "Poll Banner", type: :system do
     before { sign_in(user) }
     before do
       theme.update_setting(:topic_id, topic_with_poll.id)
-      theme.update_setting(:show_after, 0) 
-      theme.update_setting(:stop_after, 10080)
+      theme.update_setting(:show_after, 0)
+      theme.update_setting(:stop_after, 10_080)
       theme.save!
     end
 
@@ -78,7 +78,6 @@ RSpec.describe "Poll Banner", type: :system do
 
       expect(page).to have_no_css(".poll-banner-connector.visible-poll")
     end
-
   end
 
   context "when user is not logged in" do
@@ -99,7 +98,7 @@ RSpec.describe "Poll Banner", type: :system do
       sign_in(user)
       theme.update_setting(:topic_id, topic_with_poll.id)
       theme.update_setting(:show_after, 1)
-      theme.update_setting(:stop_after, 10080)
+      theme.update_setting(:stop_after, 10_080)
       theme.save!
     end
 

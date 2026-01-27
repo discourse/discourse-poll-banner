@@ -98,7 +98,7 @@
       @include btn;
 
       // btn overrides
-      // stylelint-disable-next-line no-duplicate-selectors
+      // stylelint-disable-next-line block-no-redundant-nested-style-rules
       & {
         border-radius: 100%;
         padding: 0.6em 0;
